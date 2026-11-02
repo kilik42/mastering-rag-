@@ -2,6 +2,9 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableSequence
+from langchain.chat_models import init_chat_model
+
 
 load_dotenv()
 
@@ -118,9 +121,33 @@ def exercise_first_chain():
     print(f"Generated tagline: {result}")
     return chain
 
+
+#new way to initialize a model 
+
+def new_way():
+    # the universal way to initialize a chat model
+    model = init_chat_model(model="gpt-4o-mini", temperature=0.7, max_tokens=1500)
+    # provider specific still works
+    return model
+
+def exercise_multi_model():
+
+    def get_responses(question:str, model_names: list[str]) -> dict[str, str]:
+        responses = {}
+        for model_name in model_names:
+            model = init_chat_model(model=model_name, temperature=0.7, max_tokens=1500)
+            response = model.invoke({"question": question})
+            responses[model_name] = response.content
+        return responses
+    results = get_responses("What is the capital of France?", ["gpt-4o-mini", "gpt-3.5-turbo"])
+    for model, answer in results.items():
+        print(f"Model: {model}, Answer: {answer}")
+
+
 if __name__ == "__main__":
     demo_basic_chain()
     demo_batch_execution()
     demo_streaming()
     demo_schema_inspection()
     exercise_first_chain()
+    new_way()
